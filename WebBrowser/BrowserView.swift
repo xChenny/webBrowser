@@ -9,16 +9,35 @@
 import UIKit
 import WebKit
 
-class BrowserView: UIViewController {
+class BrowserView: UIViewController, UITextFieldDelegate, WKNavigationDelegate {
     
     @IBOutlet weak var webView: WKWebView!
     @IBOutlet weak var backButton: UIButton!
     @IBOutlet weak var forwardButton: UIButton!
     @IBOutlet weak var urlTextField: UITextField!
+
+    
+    @IBAction func backButtonTapped(_ sender: UIButton) {
+        if webView.canGoBack {
+            webView.goBack()
+        }
+    }
+    
+    @IBAction func forwardButtonTapped(_ sender: UIButton) {
+        if webView.canGoForward {
+            webView.goForward()
+        }
+    }
+    
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        backButton.isEnabled = webView.canGoBack
+        forwardButton.isEnabled = webView.canGoForward
+        urlTextField.text = webView.url?.absoluteString
+    }
     
     override func viewDidLoad() {
-        // Do any additional setup after loading the view.
         super.viewDidLoad()
+        webView.navigationDelegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -27,5 +46,16 @@ class BrowserView: UIViewController {
         let url:URL = URL(string: urlString)!
         let urlRequest: URLRequest = URLRequest(url: url)
         webView.load(urlRequest)
+        urlTextField.text = urlString
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        let urlString: String = urlTextField.text!
+        let url:URL = URL(string: urlString)!
+        let urlRequest: URLRequest = URLRequest(url: url)
+        webView.load(urlRequest)
+        urlTextField.text = urlString
+        textField.resignFirstResponder()
+        return true
     }
 }
